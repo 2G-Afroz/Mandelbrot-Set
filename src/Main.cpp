@@ -2,63 +2,53 @@
 #include<iostream>
 using namespace std;
 
-void mandelFunction(vector<Vector2> &pos, float x, float y){
-				// Imaginary num "x + iy"
-
-				for(int i=0;i<20;i++){
-								pos[i].x = x;
-								pos[i].y = y;
-
-								// temp
-								float a = x*x - y*y;
-								float b = 2*x*y;
-								x = a;
-								y = b;
-				}
-}
-
-void printArrVal(vector<float> pos){
-				for(int i=0;i<20;i++){
-								DrawText(TextFormat("%f", pos[i]), 10, 40+20*i, 20, WHITE);
-				}
+// This function is used to map a number
+float map(float value, float fromMin, float fromMax, float toMin, float toMax) {
+    // Ensure that the value is within the input range
+    value = min(max(value, fromMin), fromMax);
+    return (value - fromMin) / (fromMax - fromMin) * (toMax - toMin) + toMin;
 }
 
 int main(){
-	int windowWidth = 1200;
-	int windowHeight = 850; 
+	int windowWidth = 1320;
+	int windowHeight = 880; 
 	InitWindow(windowWidth, windowHeight,"MandelbrotSet");
 
-	Vector2 centre = {600,425};
-	vector<Vector2> pos(20);
-
 	while(!WindowShouldClose()){
-    ClearBackground(BLACK);
+  	ClearBackground(WHITE);
 		BeginDrawing();
-				DrawCircle(centre.x, centre.y, 1,RED);
-				// Mouse Work
-				float mouseX = (GetMouseX()-centre.x)/200.0f;
-				float mouseY = (centre.y-GetMouseY())/200.0f;
-				
-				DrawText(TextFormat("MouseX: %f", mouseX), 10, 10, 30, WHITE); 
-				DrawText(TextFormat("MouseY: %f", mouseY), 10, 40, 30, WHITE); 
-				// Mandel Function
-				mandelFunction(pos, mouseX, mouseY);
+			// Drawing each pixel
+			for(int i=0;i<windowWidth;i++){
+				for(int j=0;j<windowHeight;j++){
 
-				// Drawing circle border
-				DrawCircleLines(centre.x, centre.y, 200, RED);
+				  // This is value of z
+					float x = 0;		// real part
+					float y = 0;		// imaginary part
+					// This is value of c
+					float a = map(i, 0, windowWidth, -2, 1); // real part
+          float b = map(j, 0, windowHeight, -1, 1);	// imaginary part
 
-				// Draw line
-				for(int i=0;i<19;i++){
-								DrawLine(centre.x+pos[i].x*200, centre.y-pos[i].y*200,
-																centre.x+pos[i+1].x*200, centre.y-pos[i+1].y*200,
-																WHITE); 
-				}
-								
+          int n = 0;
 
-				// Drawing circles
-				for(int i=0;i<20;i++){
-								DrawCircle(centre.x + pos[i].x*200, centre.y-pos[i].y*200, 4, GREEN);
-				}
+          while(n<256){
+						float xx = x*x-y*y+a;
+						float yy = 2*x*y+b;
+
+						x = xx;
+						y = yy;
+
+						if(abs(x + y) > 100.0f){
+							break;
+						}
+						n++;
+          }
+					// n = map(n, 0, 100, 0, 256); // this mapping gives different border effect.
+					// Coloring Pixels
+					Color pixelColor = {(unsigned char)n, (unsigned char)n, (unsigned char)n, 255};
+					DrawPixel(i,j,pixelColor);
+
+			}
+			}
 		EndDrawing();
 	}
 
